@@ -21,16 +21,14 @@ fig = go.Figure(
             low=df['AAPL.Low'],
             close=df['AAPL.Close']
         )
-    ]
+    ],
+    layout=dict(title='Apple OHLC')
 )
 
-# 3) Give the plot a title by updating its "layout" property:
-fig.update_layout(title='Apple OHLC')
-
-# 4) Create a Dash app
+# 3) Create a Dash app
 app = dash.Dash(__name__)
 
-# 5) Define a very simple layout -- just a plot inside a div. No inputs or outputs because the figure doesn't change.
+# 4) Define a very simple layout -- just a plot inside a div. No inputs or outputs because the figure doesn't change.
 app.layout = html.Div([dcc.Graph(id='candlestick-graph', figure=fig)])
 
 # Run it!
