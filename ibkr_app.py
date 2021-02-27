@@ -45,23 +45,23 @@ while True:
     if 'currency_pair.txt' in listdir():
         with open('currency_pair.txt', 'r') as f:
             currency_pair = f.read()
-
         remove('currency_pair.txt')
 
+        # to prevent the error that current_pair is empty
+        #   and the AssetionError(current_pair is not empty, but unrecognized)
         try:
-            contract = Forex(currency_pair)
-            bars = ib.reqHistoricalData(contract,
-                                        endDateTime='',
-                                        durationStr='30 D',
-                                        barSizeSetting='1 hour',
-                                        whatToShow='MIDPOINT',
-                                        useRTH=True
-                                        )
-            df = util.df(bars)
-
-            if type(df).__name__ == 'NoneType':
+            if currency_pair == '':
                 df_error.to_csv('currency_pair_history.csv')
             else:
+                contract = Forex(currency_pair, exchange='IDEALPRO')
+                bars = ib.reqHistoricalData(contract,
+                                            endDateTime='',
+                                            durationStr='30 D',
+                                            barSizeSetting='1 hour',
+                                            whatToShow='MIDPOINT',
+                                            useRTH=True
+                                            )
+                df = util.df(bars)
                 df.to_csv('currency_pair_history.csv')
         except AssertionError:
             df_error.to_csv('currency_pair_history.csv')
@@ -72,14 +72,16 @@ while True:
 
     # If there's a file named trade_order.p in listdir(), then enter the loop below.
     if 'trade_order.p' in listdir():
-
-        trd_ordr = pickle.load(open('trade_order.p', 'rb'))
+        with open('trade_order.p', 'rb') as f:
+            trd_ordr = pickle.load(f)
 
         trade_currency = trd_ordr['trade_currency']
         action = trd_ordr['action']
         total_quantity = trd_ordr['trade_amt']
-
         contract = Forex(trade_currency)
+        # contract_details = ContractDetails(contract)
+        # trade_hours = contract_details.tradingHours
+
         order = MarketOrder(action=action,
                             totalQuantity=total_quantity)
         order.account = acc_number
@@ -93,18 +95,23 @@ while True:
         ib_orders.connect(host='127.0.0.1', port=port, clientId=orders_client_id)
         new_order = ib_orders.placeOrder(contract, order)
 
+
         # The new_order object returned by the call to ib_orders.placeOrder() that you've written is an object of class
         #   `trade` that is kept continually updated by the `ib_insync` machinery. It's a market order; as such, it will
         #   be filled immediately.
         # In this while loop, we wait for confirmation that new_order filled.
+        # try:
         # while not new_order.orderStatus.status == 'Filled':
         #     ib_orders.sleep(0)
+
+        remove('trade_order.p')
+        ib_orders.disconnect()
+
             # we use ib_orders.sleep(0) from the ib_insync module because the async socket connection
             # is not built for the normal time.sleep() function.
 
         # your code goes here
-        remove('trade_order.p')
-        ib_orders.disconnect()
+
         # pass: same reason as above.
         pass
 

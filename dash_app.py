@@ -11,36 +11,34 @@ from time import sleep
 from helper_functions import * # this statement imports all functions from your helper_functions file!
 
 # Run your helper function to clear out any io files left over from old runs
-# 1:
 check_for_and_del_io_files()
 
+# create options in Dropdowns
+catalog_df = pd.read_csv('pairs_catalog.csv')
+options = [{'label': x, 'value': y} for x in catalog_df['label'] for y in catalog_df['value'] if x == y]
+
 # Make a Dash app!
-app = dash.Dash(__name__)
+external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # Define the layout.
 app.layout = html.Div([
-
-    # Section title
+    # Section1title
     html.H1("Section 1: Fetch & Display exchange rate historical data"),
 
     # Currency pair text input, within its own div.
-    html.Div(
-        [
-            "Input Currency: ",
-            # Your text input object goes here:
-            dcc.Input(id='currency-pair', value='', type='text'),
-            # The submit button
-            html.Button('Submit', id='submit-button', n_clicks=0)
-        ],
-    ),
+    html.Div(['Select a currency pair', dcc.Dropdown(id='section1-dropdown', options=options,value='')]),
     html.Div(id='output-div', children='This is a default value.'),
+
     # Line break
     html.Br(),
+
     # Div to hold the initial instructions and the updated info once submit is pressed
     html.Div([
         # Candlestick graph goes here:
         dcc.Graph(id='candlestick-graph')
     ]),
+
     # Another line break
     html.Br(),
 
@@ -59,21 +57,20 @@ app.layout = html.Div([
         )),
     # Trade information
     html.Div([
-        dcc.Input(id='currency-pair-traded', value='', type='text'),
+        dcc.Dropdown(id='section2-dropdown', options=options, value=''),
         dcc.Input(id='trade-amount', value='', type='number', min=0),
         html.Button('Trade', id='trade-button', n_clicks=0)
     ]
     )
 ])
 
-# Callback for what to do when submit-button is pressed
+# Callback for what to show in figure
 @app.callback(
     [Output('output-div', 'children'),
      Output('candlestick-graph', 'figure')],
-    [Input('submit-button', 'n_clicks'),
-     State('currency-pair', 'value')]
+    [Input('section1-dropdown', 'value')]
 )
-def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we only include it for the dependency.
+def update_candlestick_graph(value):
 
     # Now we're going to save the value of currency-input as a text file.
     with open("currency_pair.txt", "w") as f:
@@ -82,7 +79,7 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
     # Wait until ibkr_app runs the query and saves the historical prices csv
     while True:
         if 'currency_pair_history.csv' in listdir():
-            sleep(1)
+            sleep(0.5)
             break
         else:
             continue
@@ -105,16 +102,15 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
         ],
         layout=dict(title=value, xaxis=dict(type='date'))
     )
-
     # Return your updated text to currency-output, and the figure to candlestick-graph outputs
     return ('Submitted query for ' + value), fig
 
-# Callback for what to do when trade-button is pressed
+# Callback for what to trade
 @app.callback(
     Output('trade-confirm', 'children'),
     [Input('trade-button', 'n_clicks'),
      State('buy-or-sell', 'value'),
-     State('currency-pair-traded', 'value'),
+     State('section2-dropdown', 'value'),
      State('trade-amount', 'value')
      ], prevent_initial_call=True
 )
