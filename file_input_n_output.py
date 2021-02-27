@@ -45,7 +45,7 @@ pickle.dump(trade_order, open("trade_order.p", "wb"))
 
 # 6) Read the pickle back...
 some_var_w_pickle_data = pickle.load(open("trade_order.p", "rb"))
-print(some_var_w_pickle_data)
+print(some_var_w_pickle_data['trade_currency'])
 
 # 7) Write a text file
 some_var_that_I_want_to_write_as_text = "Jake^2"
@@ -74,4 +74,4 @@ print(os.listdir())
 
 print('file_w_jakes.txt' in os.listdir())
 
-
+print('currency_pair_history.csv' in os.listdir())

@@ -11,7 +11,7 @@ app = dash.Dash(__name__)
 
 # Define the layout of the dash page.
 app.layout = html.Div([
-    html.Div(dcc.Input(id = 'currency-pair', type = 'text')),
+    html.Div(dcc.Input(id = 'currency-pair', type = 'text'), style={'display': 'inline-block'}),
     html.Button('Submit', id = 'submit-button', n_clicks = 0),
     html.Div(id='output-div', children='This is a default value.')
 ])
