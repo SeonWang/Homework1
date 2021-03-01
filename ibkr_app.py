@@ -95,23 +95,17 @@ while True:
         ib_orders.connect(host='127.0.0.1', port=port, clientId=orders_client_id)
         new_order = ib_orders.placeOrder(contract, order)
 
-
         # The new_order object returned by the call to ib_orders.placeOrder() that you've written is an object of class
         #   `trade` that is kept continually updated by the `ib_insync` machinery. It's a market order; as such, it will
         #   be filled immediately.
         # In this while loop, we wait for confirmation that new_order filled.
-        # try:
-        # while not new_order.orderStatus.status == 'Filled':
-        #     ib_orders.sleep(0)
-
-        remove('trade_order.p')
-        ib_orders.disconnect()
-
+        while not new_order.orderStatus.status == 'Filled':
+            ib_orders.sleep(0)
             # we use ib_orders.sleep(0) from the ib_insync module because the async socket connection
             # is not built for the normal time.sleep() function.
 
-        # your code goes here
-
+        remove('trade_order.p')
+        ib_orders.disconnect()
         # pass: same reason as above.
         pass
 
